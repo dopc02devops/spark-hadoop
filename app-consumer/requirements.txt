@@ -1,0 +1,5 @@
+confluent-kafka
+requests
+pyspark
+kafka-python
+hdfs
