@@ -1,3 +1,6 @@
 venv
 .DS_Store
 .idea
+app-frontend/node_modules/
+app-frontend/build/
+app-frontend/.env
