@@ -37,9 +37,9 @@ financial_schema = StructType() \
     .add("percentage_change", FloatType()) \
     .add("time_now", StringType())
 
-# Define schema for crypto data
+# Define schema for crypto data (Updated to use 'coin' instead of 'symbol')
 crypto_schema = StructType() \
-    .add("symbol", StringType()) \
+    .add("coin", StringType()) \
     .add("price", FloatType()) \
     .add("market_cap", FloatType()) \
     .add("24h_change", FloatType()) \
@@ -119,7 +119,7 @@ def send_to_backend(data):
     }
     try:
         response = requests.post(BACKEND_API_URL, json=payload)
-        logger.info(f"🔄 Sending data to backend: {payload}")
+        logger.info(f"🔄 Sending {data['topic']} data to backend: {payload}")
         logger.info(f"🔍 Backend Response: {response.status_code} - {response.text}")
         if response.status_code == 200:
             logger.info("✅ Data successfully sent to backend")
@@ -128,22 +128,44 @@ def send_to_backend(data):
     except Exception as e:
         logger.error(f"❌ Failed to send data to backend: {e}")
 
-
 # Function to process and send each batch of streaming data to backend
 def process_batch(batch_df, batch_id):
     logger.info(f"📦 Processing batch {batch_id} with {batch_df.count()} records")
     batch_df.show(truncate=False)  # Show batch data
+
     def process_row(row):
-        data = {
-            'symbol': row['symbol'],
-            'price': row['price'],
-            'volume': row['volume'],
-            'time_now': row['time_now'],
-            'topic': 'financial'  # Or 'crypto' depending on the stream
-        }
+        # Log the row to help debug the issue
+        logger.info(f"Processing row: {row}")
+        
+        # Check if the row is financial or crypto based on the field present
+        if 'symbol' in row:  # Check for financial data
+            topic = 'financial'
+            data = {
+                'symbol': row['symbol'],
+                'price': row['price'],
+                'volume': row['volume'],
+                'time_now': row['time_now'],
+                'topic': topic
+            }
+        elif 'coin' in row:  # Check for crypto data
+            topic = 'crypto'
+            data = {
+                'coin': row['coin'],
+                'price': row['price'],
+                'volume': row['volume'],
+                'time_now': row['time_now'],
+                'topic': topic
+            }
+        else:
+            logger.error(f"Unknown data type for row: {row}")
+            return  # Skip row if neither 'symbol' nor 'coin' is found
+
+        # Send the processed data to the backend
         send_to_backend(data)
-    
+
+    # Process each row in the batch
     batch_df.foreach(process_row)
+
 
 # Output to Parquet in HDFS format
 def write_to_parquet(df, name):

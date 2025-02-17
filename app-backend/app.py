@@ -23,35 +23,33 @@ def get_crypto_data():
     return jsonify(data_store['crypto_data'])
 
 @app.route('/api/update', methods=['POST'])
+
 def update_data():
     data = request.get_json()
-    logging.info(f"Received : {data['topic']} data")
+    logging.info(f"Received data: {data}")
 
-    if not data:
-        logging.error("Invalid request: JSON expected")
-        return jsonify({'error': 'Invalid request, JSON expected'}), 400
+    # Check if the data is in the expected format
+    if not data or 'topic' not in data or 'data' not in data:
+        logging.error("Invalid data received. Expected 'topic' and 'data' fields.")
+        return jsonify({'status': 'error', 'message': 'Invalid data received. Expected "topic" and "data" fields.'}), 400
 
-    if 'topic' not in data:
-        logging.error("Missing required field: 'topic'")
-        return jsonify({'error': "Missing required field: 'topic'"}), 400
-
-    if 'data' not in data:
-        logging.error("Missing required field: 'data'")
-        return jsonify({'error': "Missing required field: 'data'"}), 400
-
-    if data['topic'] == 'financial':
-        data_store['financial_data'].append(data['data'])
+    # Extract topic and data
+    topic = data['topic']
+    payload = data['data']
+    
+    # Process and store financial data
+    if topic == 'financial':
+        data_store['financial_data'].append(payload)
         logging.info(f"Updated financial_data: {data_store['financial_data']}")
-        print(f"Updated financial_data: {data_store['financial_data']}")
-    elif data['topic'] == 'crypto':
-        data_store['crypto_data'].append(data['data'])
+    elif topic == 'crypto':
+        data_store['crypto_data'].append(payload)
         logging.info(f"Updated crypto_data: {data_store['crypto_data']}")
-        print(f"Updated crypto_data: {data_store['crypto_data']}")
     else:
-        logging.error("Invalid 'topic' value, must be 'financial' or 'crypto'")
-        return jsonify({'error': "Invalid 'topic' value, must be 'financial' or 'crypto'"}), 400
+        logging.warning(f"Unknown topic received: {topic}")
 
-    return jsonify({'status': 'success', 'received_data': data['topic']}), 200
+    return jsonify({'status': 'success'}), 200
+
+
 
 if __name__ == '__main__':
     # ✅ Run Flask app with logging
