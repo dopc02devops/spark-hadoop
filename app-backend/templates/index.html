@@ -4,24 +4,193 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto and Financial Report</title>
+
+    <!-- Include Chart.js for graph plotting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        // Function to reload the page every 60 seconds
+        // Function to reload the page every 30 seconds (0.5 minutes)
         setTimeout(function(){
             location.reload();
-        }, 30000);  // 30000ms = 0.5 minutes
+        }, 30000);  // 30000ms = 30 seconds
+
+        // Function to update the crypto chart
+        function updateCryptoChart() {
+            // Make sure the data is properly passed and parsed as JSON
+            var cryptoData = JSON.parse('{{ crypto_data | tojson }}'); 
+            var times = cryptoData.map(item => item.time_now);
+            var prices = cryptoData.map(item => item.price);
+            var coins = cryptoData.map(item => item.coin);  // Get coin names
+
+            // Update the chart with new data
+            updateCryptoGraph(times, prices, coins);
+        }
+
+        // Function to update the financial chart
+        function updateFinancialChart() {
+            // Make sure the data is properly passed and parsed as JSON
+            var financialData = JSON.parse('{{ financial_data | tojson }}'); 
+            var times = financialData.map(item => item.time_now);
+            var prices = financialData.map(item => item.price);
+            var symbols = financialData.map(item => item.symbol);  // Get stock symbols
+
+            // Update the chart with new data
+            updateFinancialGraph(times, prices, symbols);
+        }
+
+        // Function to update the crypto graph
+        function updateCryptoGraph(times, prices, coins) {
+            const ctx = document.getElementById('crypto-chart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',  // Line chart for price over time
+                data: {
+                    labels: times,
+                    datasets: [
+                        {
+                            label: 'Crypto Price (USD)',
+                            data: prices,
+                            borderColor: '#FF5733',  // Orange for crypto price line
+                            backgroundColor: 'rgba(255, 87, 51, 0.2)', // Light orange fill
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Crypto Coin',
+                            data: coins,
+                            borderColor: '#42A5F5',  // Blue for coin line
+                            backgroundColor: 'rgba(66, 165, 245, 0.2)', // Light blue fill
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return "$" + tooltipItem.raw.toFixed(2);  // Format tooltips as currency
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 5
+                            },
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Price (USD)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to update the financial graph
+        function updateFinancialGraph(times, prices, symbols) {
+            const ctx = document.getElementById('financial-chart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',  // Line chart for price over time
+                data: {
+                    labels: times,
+                    datasets: [
+                        {
+                            label: 'Financial Price (USD)',
+                            data: prices,
+                            borderColor: '#42A5F5',  // Blue for financial price line
+                            backgroundColor: 'rgba(66, 165, 245, 0.2)', // Light blue fill
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Stock Symbol',
+                            data: symbols,
+                            borderColor: '#FF5733',  // Orange for symbol line
+                            backgroundColor: 'rgba(255, 87, 51, 0.2)', // Light orange fill
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return "$" + tooltipItem.raw.toFixed(2);  // Format tooltips as currency
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 5
+                            },
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Price (USD)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial data fetch and chart update when the page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            updateCryptoChart();
+            updateFinancialChart();
+
+            // Update data every 30 seconds
+            setInterval(updateCryptoChart, 30000);  // Refresh crypto chart every 30 seconds
+            setInterval(updateFinancialChart, 30000);  // Refresh financial chart every 30 seconds
+        });
     </script>
 </head>
 <body>
     <h1>Crypto and Financial Data</h1>
 
     <h2>Crypto Data:</h2>
-    <pre id="crypto-data">{{ crypto_data | tojson(indent=2) }}</pre>
+    <!-- Canvas for the Crypto Price and Coin graph -->
+    <canvas id="crypto-chart" width="400" height="200"></canvas>
 
     <h2>Financial Data:</h2>
+    <!-- Canvas for the Financial Price and Symbol graph -->
+    <canvas id="financial-chart" width="400" height="200"></canvas>
+
+    <h2>Crypto Data (Raw JSON):</h2>
+    <pre id="crypto-data">{{ crypto_data | tojson(indent=2) }}</pre>
+
+    <h2>Financial Data (Raw JSON):</h2>
     <pre id="financial-data">{{ financial_data | tojson(indent=2) }}</pre>
 
-    <script>
-        // This script section could be used for any additional front-end dynamic behavior
-    </script>
 </body>
 </html>
