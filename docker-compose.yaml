@@ -225,18 +225,6 @@ services:
       - FLASK_APP=app.py
     networks:
       - hadoop-net
-  
-  frontend:
-    build:
-      context: ./app-frontend
-      dockerfile: Dockerfile
-    platform: linux/amd64
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    networks:
-      - hadoop-net
 
 volumes:
   hadoop_namenode:

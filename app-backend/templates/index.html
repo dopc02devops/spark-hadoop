@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto and Financial Report</title>
+</head>
+<body>
+    <h1>Crypto and Financial Data</h1>
+
+    <h2>Crypto Data:</h2>
+    <pre id="crypto-data">{{ crypto_data | tojson(indent=2) }}</pre>
+
+    <h2>Financial Data:</h2>
+    <pre id="financial-data">{{ financial_data | tojson(indent=2) }}</pre>
+
+    <script>
+        // This script section could be used for any additional front-end dynamic behavior
+    </script>
+</body>
+</html>
